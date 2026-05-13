@@ -1,8 +1,9 @@
+import hardhatKeystorePlugin from "@nomicfoundation/hardhat-keystore";
 import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
 import { configVariable, defineConfig } from "hardhat/config";
 
 export default defineConfig({
-  plugins: [hardhatToolboxViemPlugin],
+  plugins: [hardhatToolboxViemPlugin, hardhatKeystorePlugin],
   solidity: {
     profiles: {
       default: {
@@ -34,5 +35,9 @@ export default defineConfig({
       url: configVariable("SEPOLIA_RPC_URL"),
       accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
     },
+    localhost: {
+      type: "http",
+      url: "http://127.0.0.1:8545/"
+    }
   },
 });
