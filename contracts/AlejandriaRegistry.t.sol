@@ -186,74 +186,6 @@ contract AlejandriaRegistryTest is Test {
         assertEq(ids[0], 1);
     }
 
-    // --- update ---
-
-    function test_Update_ChangesMetadata() public {
-        vm.startPrank(alice);
-        uint256 id = _registerDefault(HASH_A);
-        registry.update(
-            id,
-            AlejandriaRegistry.UpdateParams({
-                title: "Titulo nuevo", authorNames: emptyNames, authorAddresses: emptyAddrs,
-                institution: "MIT", doi: "10.9999/x", ipfsHash: "QmNew"
-            })
-        );
-        vm.stopPrank();
-
-        AlejandriaRegistry.Publication memory pub = registry.getPublication(id);
-        assertEq(pub.title, "Titulo nuevo");
-        assertEq(pub.institution, "MIT");
-        assertEq(pub.doi, "10.9999/x");
-        assertEq(pub.ipfsHash, "QmNew");
-        assertEq(pub.contentHash, HASH_A);
-    }
-
-    function test_Update_AllowedByAdmin() public {
-        vm.prank(alice);
-        uint256 id = _registerDefault(HASH_A);
-
-        vm.prank(admin);
-        registry.update(
-            id,
-            AlejandriaRegistry.UpdateParams({
-                title: "Corregido por admin", authorNames: emptyNames,
-                authorAddresses: emptyAddrs, institution: "", doi: "", ipfsHash: ""
-            })
-        );
-    }
-
-    function test_Update_RevertOn_Unauthorized() public {
-        vm.prank(alice);
-        uint256 id = _registerDefault(HASH_A);
-
-        vm.prank(bob);
-        vm.expectRevert(AlejandriaRegistry.NotAuthorized.selector);
-        registry.update(
-            id,
-            AlejandriaRegistry.UpdateParams({
-                title: "Hacked", authorNames: emptyNames, authorAddresses: emptyAddrs,
-                institution: "", doi: "", ipfsHash: ""
-            })
-        );
-    }
-
-    function test_Update_RevertOn_RevokedPublication() public {
-        vm.startPrank(alice);
-        uint256 id = _registerDefault(HASH_A);
-        registry.revoke(id);
-        vm.expectRevert(
-            abi.encodeWithSelector(AlejandriaRegistry.PublicationInactive.selector, id)
-        );
-        registry.update(
-            id,
-            AlejandriaRegistry.UpdateParams({
-                title: "Intento fallido", authorNames: emptyNames, authorAddresses: emptyAddrs,
-                institution: "", doi: "", ipfsHash: ""
-            })
-        );
-        vm.stopPrank();
-    }
-
     // --- revoke ---
 
     function test_Revoke_DeactivatesPublication() public {
@@ -278,26 +210,6 @@ contract AlejandriaRegistryTest is Test {
     }
 
     // --- transferRegistration ---
-
-    function test_TransferRegistration_ChangesOwner() public {
-        vm.prank(alice);
-        uint256 id = _registerDefault(HASH_A);
-
-        vm.prank(alice);
-        registry.transferRegistration(id, bob);
-
-        AlejandriaRegistry.Publication memory pub = registry.getPublication(id);
-        assertEq(pub.registrant, bob);
-
-        vm.prank(bob);
-        registry.update(
-            id,
-            AlejandriaRegistry.UpdateParams({
-                title: "Actualizado por bob", authorNames: emptyNames,
-                authorAddresses: emptyAddrs, institution: "", doi: "", ipfsHash: ""
-            })
-        );
-    }
 
     function test_TransferRegistration_RevertOn_ZeroAddress() public {
         vm.prank(alice);

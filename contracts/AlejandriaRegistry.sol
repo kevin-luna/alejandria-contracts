@@ -159,23 +159,6 @@ contract AlejandriaRegistry {
         emit PublicationRegistered(id, msg.sender, p.contentHash, p.pubType);
     }
 
-    /// @notice Actualiza los metadatos de una publicación (no altera el hash ni la fecha).
-    function update(uint256 id, UpdateParams memory p)
-        external exists(id) active(id) onlyRegistrantOrAdmin(id)
-    {
-        if (bytes(p.title).length == 0) revert EmptyTitle();
-
-        Publication storage pub = _publications[id];
-        pub.title           = p.title;
-        pub.authorNames     = p.authorNames;
-        pub.authorAddresses = p.authorAddresses;
-        pub.institution     = p.institution;
-        pub.doi             = p.doi;
-        pub.ipfsHash        = p.ipfsHash;
-
-        emit PublicationUpdated(id, msg.sender);
-    }
-
     /// @notice Desactiva una publicación (no la elimina; preserva el historial).
     function revoke(uint256 id)
         external exists(id) active(id) onlyRegistrantOrAdmin(id)
