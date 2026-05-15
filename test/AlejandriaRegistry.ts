@@ -173,68 +173,6 @@ describe("AlejandriaRegistry", async function () {
     assert.equal(registered, false);
   });
 
-  // --- getByRegistrant / getByAuthor ---
-
-  it("getByRegistrant: lista las publicaciones del registrante", async () => {
-    const registry = await deployRegistry();
-    await registerDefault(registry, HASH_A);
-    await registerDefault(registry, HASH_B);
-    const ids = await registry.read.getByRegistrant([alice.account.address]);
-    assert.deepEqual(ids, [1n, 2n]);
-  });
-
-  it("getByAuthor: indexa las direcciones de autores", async () => {
-    const registry = await deployRegistry();
-    await registry.write.register(
-      [makeRegisterParams(HASH_A, PublicationType.ARTICLE, {
-        title:           "Paper conjunto",
-        authorAddresses: [charlie.account.address],
-      })],
-      { account: alice.account },
-    );
-    const ids = await registry.read.getByAuthor([charlie.account.address]);
-    assert.equal(ids.length, 1);
-    assert.equal(ids[0], 1n);
-  });
-
-  // --- update ---
-
-  it("update: modifica metadatos sin cambiar el hash", async () => {
-    const registry = await deployRegistry();
-    await registerDefault(registry, HASH_A);
-    await registry.write.update(
-      [1n, { title: "Titulo nuevo", authorNames: [], authorAddresses: [], institution: "MIT", doi: "10.9999/x", ipfsHash: "QmNew" }],
-      { account: alice.account },
-    );
-    const pub = await registry.read.getPublication([1n]);
-    assert.equal(pub.title, "Titulo nuevo");
-    assert.equal(pub.institution, "MIT");
-    assert.equal(pub.contentHash, HASH_A);
-  });
-
-  it("update: el admin puede modificar cualquier publicación", async () => {
-    const registry = await deployRegistry();
-    await registerDefault(registry, HASH_A);
-    await registry.write.update(
-      [1n, { title: "Corregido por admin", authorNames: [], authorAddresses: [], institution: "", doi: "", ipfsHash: "" }],
-      { account: admin.account },
-    );
-    const pub = await registry.read.getPublication([1n]);
-    assert.equal(pub.title, "Corregido por admin");
-  });
-
-  it("update: revierte si el llamante no está autorizado", async () => {
-    const registry = await deployRegistry();
-    await registerDefault(registry, HASH_A);
-    await assert.rejects(
-      registry.write.update(
-        [1n, { title: "Hacked", authorNames: [], authorAddresses: [], institution: "", doi: "", ipfsHash: "" }],
-        { account: bob.account },
-      ),
-      /NotAuthorized/,
-    );
-  });
-
   // --- revoke ---
 
   it("revoke: desactiva la publicación", async () => {

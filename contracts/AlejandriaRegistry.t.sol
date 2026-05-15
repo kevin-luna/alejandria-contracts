@@ -154,38 +154,6 @@ contract AlejandriaRegistryTest is Test {
         assertFalse(registered);
     }
 
-    // --- getByRegistrant / getByAuthor ---
-
-    function test_GetByRegistrant() public {
-        vm.startPrank(alice);
-        _registerDefault(HASH_A);
-        _registerDefault(HASH_B);
-        vm.stopPrank();
-
-        uint256[] memory ids = registry.getByRegistrant(alice);
-        assertEq(ids.length, 2);
-        assertEq(ids[0], 1);
-        assertEq(ids[1], 2);
-    }
-
-    function test_GetByAuthor_IndexesAuthorAddresses() public {
-        address[] memory addrs = new address[](1);
-        addrs[0] = charlie;
-
-        vm.prank(alice);
-        registry.register(
-            AlejandriaRegistry.RegisterParams({
-                title: "Paper conjunto", authorNames: emptyNames, authorAddresses: addrs,
-                pubType: AlejandriaRegistry.PublicationType.ARTICLE,
-                contentHash: HASH_A, institution: "", doi: "", ipfsHash: ""
-            })
-        );
-
-        uint256[] memory ids = registry.getByAuthor(charlie);
-        assertEq(ids.length, 1);
-        assertEq(ids[0], 1);
-    }
-
     // --- revoke ---
 
     function test_Revoke_DeactivatesPublication() public {

@@ -59,8 +59,6 @@ contract AlejandriaRegistry {
 
     mapping(uint256 => Publication) private _publications;
     mapping(bytes32  => uint256)    private _hashToId;
-    mapping(address  => uint256[])  private _byRegistrant;
-    mapping(address  => uint256[])  private _byAuthor;
 
     // ─── Eventos ─────────────────────────────────────────────────────────────
 
@@ -148,13 +146,6 @@ contract AlejandriaRegistry {
         });
 
         _hashToId[p.contentHash] = id;
-        _byRegistrant[msg.sender].push(id);
-
-        for (uint256 i = 0; i < p.authorAddresses.length; i++) {
-            if (p.authorAddresses[i] != address(0)) {
-                _byAuthor[p.authorAddresses[i]].push(id);
-            }
-        }
 
         emit PublicationRegistered(id, msg.sender, p.contentHash, p.pubType);
     }
@@ -174,7 +165,6 @@ contract AlejandriaRegistry {
         if (newRegistrant == address(0)) revert ZeroAddress();
         address old = _publications[id].registrant;
         _publications[id].registrant = newRegistrant;
-        _byRegistrant[newRegistrant].push(id);
         emit RegistrationTransferred(id, old, newRegistrant);
     }
 
@@ -204,22 +194,6 @@ contract AlejandriaRegistry {
     {
         id = _hashToId[contentHash];
         registered = id != 0 && _publications[id].isActive;
-    }
-
-    /// @notice Lista de IDs registrados por una dirección determinada.
-    function getByRegistrant(address registrant)
-        external view
-        returns (uint256[] memory)
-    {
-        return _byRegistrant[registrant];
-    }
-
-    /// @notice Lista de IDs en los que una dirección figura como autor.
-    function getByAuthor(address author)
-        external view
-        returns (uint256[] memory)
-    {
-        return _byAuthor[author];
     }
 
     /// @notice Total de publicaciones registradas (incluyendo revocadas).
